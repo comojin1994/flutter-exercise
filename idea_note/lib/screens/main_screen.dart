@@ -20,8 +20,6 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
 
     getIdeaInfo();
-
-    // setInsertIdeaInfo();
   }
 
   @override
@@ -52,7 +50,16 @@ class _MainScreenState extends State<MainScreen> {
         child: ListView.builder(
           itemCount: lstIdeaInfo.length,
           itemBuilder: (context, index) {
-            return listItem(index);
+            return GestureDetector(
+              child: listItem(index),
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/detail',
+                  arguments: lstIdeaInfo[index],
+                );
+              },
+            );
           },
         ),
       ),
@@ -152,19 +159,5 @@ class _MainScreenState extends State<MainScreen> {
     );
     setState(() {});
     // await dbHelper.closeDatabase();
-  }
-
-  Future<void> setInsertIdeaInfo() async {
-    await dbHelper.initDatabase();
-    await dbHelper.insertIdeaInfo(
-      IdeaInfo(
-        title: '테스트 title',
-        motive: '테스트 motive',
-        content: '테스트 content',
-        priority: 5,
-        feedback: '테스트 피드백',
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-    );
   }
 }

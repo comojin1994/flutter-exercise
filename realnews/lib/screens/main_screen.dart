@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -13,12 +16,16 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   List<dynamic> lstNewsInfo = [];
+  late String admobBannerId;
+  late BannerAd _bannerAd;
 
   @override
   void initState() {
     super.initState();
 
     getNewsInfo();
+
+    setAdmob();
   }
 
   @override
@@ -42,12 +49,23 @@ class _MainScreenState extends State<MainScreen> {
         centerTitle: true,
       ),
       body: Center(
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          itemCount: lstNewsInfo.length,
-          itemBuilder: (context, index) {
-            return listCard(context, index);
-          },
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                itemCount: lstNewsInfo.length,
+                itemBuilder: (context, index) {
+                  return listCard(context, index);
+                },
+              ),
+            ),
+            SizedBox(
+              height: _bannerAd.size.height.toDouble(),
+              width: _bannerAd.size.width.toDouble(),
+              child: AdWidget(ad: _bannerAd),
+            ),
+          ],
         ),
       ),
     );
@@ -159,5 +177,42 @@ class _MainScreenState extends State<MainScreen> {
     final dateTime = DateTime.parse(date);
     final formatter = DateFormat('yyyy-MM-dd HH:mm');
     return formatter.format(dateTime);
+  }
+
+  String bannerAdUnitId() {
+    if (Platform.isAndroid) {
+      if (kReleaseMode) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      }
+    } else if (Platform.isIOS) {
+      if (kReleaseMode) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      } else {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  void setAdmob() {
+    _bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: bannerAdUnitId(),
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(
+            () {},
+          );
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+      request: AdRequest(),
+    );
+    _bannerAd.load();
   }
 }

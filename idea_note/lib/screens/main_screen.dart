@@ -52,12 +52,32 @@ class _MainScreenState extends State<MainScreen> {
           itemBuilder: (context, index) {
             return GestureDetector(
               child: listItem(index),
-              onTap: () {
-                Navigator.pushNamed(
+              onTap: () async {
+                var result = await Navigator.pushNamed(
                   context,
                   '/detail',
                   arguments: lstIdeaInfo[index],
                 );
+
+                if (result != null) {
+                  getIdeaInfo();
+
+                  String msg = '';
+                  if (result == 'update') {
+                    msg = '아이디어가 수정되었습니다.';
+                  } else if (result == 'delete') {
+                    msg = '아이디어가 삭제되었습니다.';
+                  }
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(msg),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
               },
             );
           },
@@ -65,8 +85,20 @@ class _MainScreenState extends State<MainScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color(0xB27E52FC).withValues(alpha: 0.7),
-        onPressed: () {
-          Navigator.pushNamed(context, '/newIdea');
+        onPressed: () async {
+          var result = await Navigator.pushNamed(context, '/newIdea');
+          if (result != null) {
+            getIdeaInfo();
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('아이디어가 저장되었습니다.'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          }
         },
         child: Image.asset(
           width: 64,

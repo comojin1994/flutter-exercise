@@ -27,6 +27,44 @@ class _NewIdeaScreenState extends State<NewIdeaScreen> {
   var dbHelper = DatabaseHelper();
 
   @override
+  void initState() {
+    super.initState();
+
+    if (widget.ideaInfo != null) {
+      _titleController.text = widget.ideaInfo!.title;
+      _motiveController.text = widget.ideaInfo!.motive;
+      _contentController.text = widget.ideaInfo!.content;
+      if (widget.ideaInfo!.feedback.isNotEmpty) {
+        _feedbackController.text = widget.ideaInfo!.feedback;
+      }
+      priority = widget.ideaInfo!.priority;
+
+      isPressed1 = false;
+      isPressed2 = false;
+      isPressed3 = false;
+      isPressed4 = false;
+      isPressed5 = false;
+      switch (widget.ideaInfo!.priority) {
+        case 1:
+          isPressed1 = true;
+          break;
+        case 2:
+          isPressed2 = true;
+          break;
+        case 3:
+          isPressed3 = true;
+          break;
+        case 4:
+          isPressed4 = true;
+          break;
+        case 5:
+          isPressed5 = true;
+          break;
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +82,7 @@ class _NewIdeaScreenState extends State<NewIdeaScreen> {
         title: Row(
           children: [
             Text(
-              '새 아이디어 작성하기',
+              widget.ideaInfo == null ? '새 아이디어 작성하기' : '아이디어 편집',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16,
@@ -444,7 +482,7 @@ class _NewIdeaScreenState extends State<NewIdeaScreen> {
                     ),
                   ),
                   child: Text(
-                    '아이디어 작성 완료',
+                    widget.ideaInfo == null ? '아이디어 작성 완료' : '아이디어 수정 완료',
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 14,
@@ -483,8 +521,24 @@ class _NewIdeaScreenState extends State<NewIdeaScreen> {
 
                     await setInsertIdeaInfo(ideaInfo);
 
-                    if (mounted) {
-                      Navigator.pop(context);
+                    if (context.mounted) {
+                      Navigator.pop(context, 'insert');
+                    }
+                  } else {
+                    var ideaInfoModify = widget.ideaInfo;
+                    ideaInfoModify!.title = titleValue;
+                    ideaInfoModify.motive = motiveValue;
+                    ideaInfoModify.content = contentValue;
+                    ideaInfoModify.priority = priority;
+                    ideaInfoModify.feedback =
+                        feedbackValue.isNotEmpty ? feedbackValue : '';
+                    ideaInfoModify.createdAt =
+                        DateTime.now().millisecondsSinceEpoch;
+
+                    await setUpdateIdeaInfo(ideaInfoModify);
+
+                    if (context.mounted) {
+                      Navigator.pop(context, 'update');
                     }
                   }
                 },
@@ -499,5 +553,10 @@ class _NewIdeaScreenState extends State<NewIdeaScreen> {
   Future<void> setInsertIdeaInfo(IdeaInfo ideaInfo) async {
     await dbHelper.initDatabase();
     await dbHelper.insertIdeaInfo(ideaInfo);
+  }
+
+  Future<void> setUpdateIdeaInfo(IdeaInfo ideaInfo) async {
+    await dbHelper.initDatabase();
+    await dbHelper.updateIdeaInfo(ideaInfo);
   }
 }
